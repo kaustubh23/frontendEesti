@@ -1,0 +1,57 @@
+<zk>
+<window title="Eesti Energia" viewModel="@id('vm') @init('eesti.frontend.demo.modelview.MainViewModel')">
+    <image src="/img/banner.png" width="1500px" height="300px"/>
+     	<separator height="30px"/>
+	<label value="Try Our Yummy Treats"/>
+	<listbox id="listclick"
+				model="@load(vm.itemsList)" checkmark="true"
+				emptyMessage="No items Found" rows="0"
+				selectedItem="@bind(vm.item)">
+				<listhead>
+					<listheader label="" width="40px" />
+					<listheader label="" />
+					<listheader label="Name" />
+					<listheader label="Price" />
+					<listheader label="Quantity Available" />
+					<listheader label="Quantity Order" />
+				</listhead>
+				<template name="model" var="it" status="s">
+					<listitem disabled="@load(it.imgDisabled)">
+						<listcell label="" />
+						<listcell style="text-align: left" 
+						onClick="@command('imageClick')" 
+						visible="@load(it.entry)" >
+                         <image src="/img/${it.name}.png" />
+                        </listcell>
+						<listcell label="@load(it.name)" />
+						<listcell label="@load(it.name)" />
+						<listcell label="@load(it.price)" />
+						<listcell   visible="@load(!it.entry)" >
+						<textbox value="@bind(it.quantityInsert)"/>
+						</listcell>
+						<listcell label="@load(it.quantity)" visible="@load(it.entry)"/>
+						<listcell label="@load(it.orderQuntity)" />
+					</listitem>
+				</template>
+			</listbox>
+	
+	<button  id="captureClick" 
+		 onClick="@command('capture')" label="Capture"/>
+	<separator />
+	
+	<label value="Total Amount:"/>
+	<label value="@bind(vm.totalPrice)"/>
+	 <separator />
+	 
+	<label value="Cash Paid:"/>
+	<textbox value="@bind(vm.cashPaid)"/>
+	 <separator />
+	
+	<label value="Return Amount :"/>
+	<label value="@bind(vm.returnCash)"/>		
+    <separator />
+    <button  id="Process"  onClick="@command('process')"
+		label="Submit"  />
+    
+    </window>
+</zk>
