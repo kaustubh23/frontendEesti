@@ -79,8 +79,8 @@ public class MainViewModel {
 				p.setEntry(true);
 			});
 		}
-		itemsClient.buyItem(getItemsList());
-		// init();
+		itemsClient.buyItem(getItemsList()).subscribe();
+		 init();
 	}
 
 	/*
