@@ -20,12 +20,9 @@ import reactor.core.publisher.Mono;
 public class MainViewModel {
 
 	private ItemsClient itemsClient;
-
-	// Map<String, PageModel<String>> pages = new HashMap<>();
-//	private PageModel<String> currentPage;
 	private List<Itemdetails> itemsList;
 	private double cashPaid;
-	private double totalPrice = 0;
+	private double totalPrice;
 	private double returnCash;
 	private boolean submitEntry;
 	@Autowired
@@ -39,25 +36,11 @@ public class MainViewModel {
 		setItemList(mono.block());
 		checkQuantityLessThanzero();
 	}
-	/*
-	 * @Listen(Events.ON_SELECT + "= #listclick") public void
-	 * onListClick(@SuppressWarnings("rawtypes") Event event) { if (getItemsList()
-	 * != null) { int orderQuantity =
-	 * getItemsList().get(getItemsList().indexOf(item)).getOrderQuntity();
-	 * getItemsList().get(getItemsList().indexOf(item)).setOrderQuntity(
-	 * orderQuantity + 1); ; }
-	 * 
-	 * }
-	 */
+	
 
 	@Command
 	@NotifyChange({ "returnCash" })
 	public void process() {
-		/*
-		 * if (getItemsList() != null) { getItemsList().stream().forEach(item -> { if
-		 * (item.getOrderQuntity() > 0) { totalPrice = item.getPrice() *
-		 * item.getOrderQuntity(); } }); }
-		 */
 		setReturnCash(cashPaid - totalPrice);
 		Flux<Itemdetails> flux = itemsClient.buyItem(getItemsList());
 		Mono<List<Itemdetails>> mom = flux.collectList();
@@ -68,11 +51,6 @@ public class MainViewModel {
 	@Command
 	@NotifyChange({ "captureClick" })
 	public void capture() {
-		/*
-		 * if (getItemsList() != null) { getItemsList().stream().forEach(item -> { if
-		 * (item.getOrderQuntity() > 0) { totalPrice = item.getPrice() *
-		 * item.getOrderQuntity(); } }); }
-		 */
 		if (getItemsList() != null) {
 			getItemsList().stream().forEach(p -> {
 				p.setQuantity(p.getQuantityInsert());
@@ -80,19 +58,10 @@ public class MainViewModel {
 			});
 		}
 		itemsClient.buyItem(getItemsList()).subscribe();
+		setSubmitEntry(false);
 		 init();
 	}
 
-	/*
-	 * @Command
-	 * 
-	 * @NotifyChange({ "itemsList" }) public void entryClick() { List<Itemdetails>
-	 * list =getItemsList(); if (list != null) { list.stream().forEach(p->{
-	 * 
-	 * if(!p.isEntry()) { setSubmitEntry(true);
-	 * 
-	 * } }); } }
-	 */
 
 	@Command
 	@NotifyChange({ "itemsList" })
@@ -106,24 +75,19 @@ public class MainViewModel {
 			;
 		}
 
-		if (getItemsList() != null) {
-			getItemsList().stream().forEach(item -> {
-				if (item.getOrderQuntity() > 0) {
-					totalPrice = item.getPrice() * item.getOrderQuntity();
-				}
-			});
-		}
 		
 		checkQuantityLessThanzero();
+		
 	}
 	
 	public void checkQuantityLessThanzero() {
-		
 		if (getItemsList() != null) {
 			getItemsList().stream().forEach(item -> {
 				if (item.getOrderQuntity() > 0) {
-					totalPrice = item.getPrice() * item.getOrderQuntity();
+					totalPrice =totalPrice+ item.getPrice() * item.getOrderQuntity();
+					
 				}
+				
 				if(item.getQuantity()<=0) {
 					item.setImgDisabled(true);
 				}else {
@@ -131,23 +95,10 @@ public class MainViewModel {
 				}
 			});
 		}
+		
 	}
 	
-
-	/*
-	 * @Command
-	 * 
-	 * @NotifyChange("currentTime") public void updateTime() {
-	 * 
-	 * //NOOP just for the notify change }
-	 */
-
-	/*
-	 * @Command
-	 * 
-	 * @NotifyChange("currentPage") public void navigate(@BindingParam("page")
-	 * String page) { this.currentPage = pages.get(page); }
-	 */
+	
 
 	@Command
 	@NotifyChange("itemsList")

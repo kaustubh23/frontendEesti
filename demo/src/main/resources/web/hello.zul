@@ -36,7 +36,7 @@
 			</listbox>
 	
 	<button  id="captureClick" 
-		 onClick="@command('capture')" label="Capture"/>
+		 onClick="@command('capture')" label="Capture" visible="@load(vm.submitEntry)"/>
 	<separator />
 	
 	<label value="Total Amount:"/>
