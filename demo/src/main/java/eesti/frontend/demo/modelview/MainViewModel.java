@@ -1,13 +1,16 @@
 package eesti.frontend.demo.modelview;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zkplus.spring.DelegatingVariableResolver;
 
@@ -22,9 +25,11 @@ public class MainViewModel {
 	private ItemsClient itemsClient;
 	private List<Itemdetails> itemsList;
 	private double cashPaid;
-	private double totalPrice;
+	private double returnTotal;
 	private double returnCash;
 	private boolean submitEntry;
+	private boolean captureDisabled;
+	double total = 0;
 	@Autowired
 	private Itemdetails item = new Itemdetails();
 
@@ -36,15 +41,17 @@ public class MainViewModel {
 		setItemList(mono.block());
 		checkQuantityLessThanzero();
 	}
-	
 
 	@Command
 	@NotifyChange({ "returnCash" })
 	public void process() {
-		setReturnCash(cashPaid - totalPrice);
+
 		Flux<Itemdetails> flux = itemsClient.buyItem(getItemsList());
 		Mono<List<Itemdetails>> mom = flux.collectList();
 		List<Itemdetails> get = mom.block();
+		// Executions.getCurrent().sendRedirect("");
+		setReturnCash(cashPaid - total);
+		
 
 	}
 
@@ -59,46 +66,52 @@ public class MainViewModel {
 		}
 		itemsClient.buyItem(getItemsList()).subscribe();
 		setSubmitEntry(false);
-		 init();
+		Executions.getCurrent().sendRedirect("");
 	}
-
 
 	@Command
 	@NotifyChange({ "itemsList" })
 	public void imageClick() {
-
-		if (getItemsList() != null) {
-			int orderQuantity = getItemsList().get(getItemsList().indexOf(item)).getOrderQuntity();
-			int quantity = getItemsList().get(getItemsList().indexOf(item)).getQuantity();
-			getItemsList().get(getItemsList().indexOf(item)).setOrderQuntity(orderQuantity + 1);
-			getItemsList().get(getItemsList().indexOf(item)).setQuantity(quantity - 1);
-			;
-		}
-
-		
 		checkQuantityLessThanzero();
-		
-	}
-	
-	public void checkQuantityLessThanzero() {
 		if (getItemsList() != null) {
-			getItemsList().stream().forEach(item -> {
-				if (item.getOrderQuntity() > 0) {
-					totalPrice =totalPrice+ item.getPrice() * item.getOrderQuntity();
-					
-				}
-				
-				if(item.getQuantity()<=0) {
-					item.setImgDisabled(true);
-				}else {
-					item.setImgDisabled(false);
-				}
-			});
+			if (!item.isImgDisabled()) {
+				int orderQuantity = getItemsList().get(getItemsList().indexOf(item)).getOrderQuntity();
+				int quantity = getItemsList().get(getItemsList().indexOf(item)).getQuantity();
+				getItemsList().get(getItemsList().indexOf(item)).setOrderQuntity(orderQuantity + 1);
+				getItemsList().get(getItemsList().indexOf(item)).setQuantity(quantity - 1);
+
+			}
+
 		}
-		
+
 	}
-	
-	
+
+	public void checkQuantityLessThanzero() {
+		 DecimalFormat df = new DecimalFormat("0.00");
+		if (getItemsList() != null) {
+			for (Itemdetails item : getItemsList()) {
+				if (!item.isEntry()) {
+					setCaptureDisabled(false);
+				} else {
+					setCaptureDisabled(true);
+				}
+				if (item.getOrderQuntity() > 0) {
+					total = total + (double) (item.getPrice() * item.getOrderQuntity());
+
+					if (item.getQuantity() <= 0) {
+						item.setImgDisabled(true);
+					} else {
+						item.setImgDisabled(false);
+					}
+				}
+			}
+
+		}
+		setReturnTotal(Double.parseDouble(df.format(total)));
+
+		// setTotalAmount(String.valueOf(total));
+
+	}
 
 	@Command
 	@NotifyChange("itemsList")
@@ -133,30 +146,34 @@ public class MainViewModel {
 	public double getReturnCash() {
 		return returnCash;
 	}
-
-	@Command
-	@NotifyChange("returnCash")
-	public void setReturnCash(double returnCash) {
-		this.returnCash = returnCash;
-	}
-
-	public double getTotalPrice() {
-		return totalPrice;
-	}
-
-	@Command
-	@NotifyChange("totalPrice")
-	public void setTotalPrice(double totalPrice) {
-		this.totalPrice = totalPrice;
-	}
-
-	public boolean isSubmitEntry() {
-		return submitEntry;
-	}
-
+	  
+	  public void setReturnCash(double returnCash) {
+	  this.returnCash = returnCash; 
+	  BindUtils.postNotifyChange(null, null, this, "returnCash");}
+	  
+	  public boolean isSubmitEntry() { return submitEntry; }
+	 
 	@Command
 	@NotifyChange("submitEntry")
 	public void setSubmitEntry(boolean submitEntry) {
 		this.submitEntry = submitEntry;
 	}
+
+	public boolean isCaptureDisabled() {
+		return captureDisabled;
+	}
+
+	public void setCaptureDisabled(boolean captureDisabled) {
+		this.captureDisabled = captureDisabled;
+	}
+
+	public double getReturnTotal() {
+		return returnTotal;
+	}
+	
+	public void setReturnTotal(double returnTotal) {
+		this.returnTotal = returnTotal;
+		BindUtils.postNotifyChange(null, null, this, "returnTotal");
+	}
+
 }

@@ -1,6 +1,6 @@
 <zk>
 <window title="Eesti Energia" viewModel="@id('vm') @init('eesti.frontend.demo.modelview.MainViewModel')">
-    <image src="/img/banner.png" width="1500px" height="300px"/>
+    <image src="/img/banner.png" width="2400px" height="300px" align="center"/>
      	<separator height="30px"/>
 	<label value="Try Our Yummy Treats"/>
 	<listbox id="listclick"
@@ -8,8 +8,7 @@
 				emptyMessage="No items Found" rows="0"
 				selectedItem="@bind(vm.item)">
 				<listhead>
-					<listheader label="" width="40px" />
-					<listheader label="" />
+					<listheader label="" width="1px" />
 					<listheader label="Name" />
 					<listheader label="Price" />
 					<listheader label="Quantity Available" />
@@ -17,14 +16,12 @@
 				</listhead>
 				<template name="model" var="it" status="s">
 					<listitem disabled="@load(it.imgDisabled)">
-						<listcell label="" />
+						<listcell label="     " />
 						<listcell style="text-align: left" 
-						onClick="@command('imageClick')" 
-						visible="@load(it.entry)" >
-                         <image src="/img/${it.name}.png" />
+						onClick="@command('imageClick')" >
+                         <image src="/img/${it.name}.png" visible="@load(it.entry)"/>
+                         <label value="@load(it.name)" />
                         </listcell>
-						<listcell label="@load(it.name)" />
-						<listcell label="@load(it.name)" />
 						<listcell label="@load(it.price)" />
 						<listcell   visible="@load(!it.entry)" >
 						<textbox value="@bind(it.quantityInsert)"/>
@@ -36,20 +33,24 @@
 			</listbox>
 	
 	<button  id="captureClick" 
-		 onClick="@command('capture')" label="Capture" visible="@load(vm.submitEntry)"/>
+		 onClick="@command('capture')" label="Capture" disabled="@load(vm.captureDisabled)"/>
 	<separator />
-	
-	<label value="Total Amount:"/>
-	<label value="@bind(vm.totalPrice)"/>
-	 <separator />
+
 	 
 	<label value="Cash Paid:"/>
 	<textbox value="@bind(vm.cashPaid)"/>
 	 <separator />
 	
-	<label value="Return Amount :"/>
+	<label value="Return Cash :"/>
 	<label value="@bind(vm.returnCash)"/>		
     <separator />
+	
+	
+	<label value="Total Amount :"/>
+	<label value="@bind(vm.returnTotal)"/>		
+    <separator />
+  	
+	
     <button  id="Process"  onClick="@command('process')"
 		label="Submit"  />
     
